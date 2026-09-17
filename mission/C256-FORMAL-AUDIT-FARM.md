@@ -1,37 +1,20 @@
-# C256–C265 — FORMAL AUDIT FARM
+# CEREBRON OMEGA — COLLATZ FORMAL AUDIT FARM — CHECKPOINT 2026-09-17
 
-Audit the strongest current Collatz claims from the Master Hub.
+MISSION: independently audit every current claim in the H-COUPLING / H-LOG / 3-adic program. Do not trust prior campaign labels without rederivation.
 
-Current objects:
-- accelerated odd Collatz T(x)=(3x+1)/2^{v2(3x+1)};
-- valuation words a_i>=1, A_k=sum_{i<k}a_i;
-- exact affine form 2^{A_k}x_k=3^k x_0+C_k;
-- cycle closure D=2^{A_n}-3^n, D|C_n required;
-- mechanical/Sturmian balanced words and first-return windows;
-- exact 2-adic cylinder x_0 mod 2^{A_n+1};
-- 3-adic endpoint/backward congruence constraints;
-- arbitrary-length finite first-return feasibility is under study;
-- CYCLES OPEN.
+Audit targets:
+- H-factorization: 3^{u_j}t_j-1=4^{r_j}h_j and 2^{u_{j+1}}t_{j+1}-1=3^{r_j}h_j.
+- H-LOG exact identity and positivity of each term.
+- h≡5 mod6, h>=5.
+- address h≡-4^{-r} mod3^u and ord_{3^u}(4)=3^{u-1}.
+- lifting rho_{u+1}=rho_u+k3^{u-1}; verify sign and digit formula carefully.
+- H-COUPLING: 2^{u_{j+1}+2r_{j+1}}h_{j+1}-3^{u_{j+1}+r_j}h_j=3^{u_{j+1}}-2^{u_{j+1}}.
+- any proposed collective bound and any LOWER GAP comparison.
 
-AUDIT TARGETS:
-1. Quantifiers: distinguish fixed n, arbitrarily large n, all n.
-2. Distinguish local realizability of finite words from cycle closure.
-3. Check every divisibility and congruence modulus exactly.
-4. Check endpoint conventions and strict/non-strict inequalities.
-5. Detect circular use of D|C, minimum assumptions, or rotations.
-6. Check asymptotic statements for uniformity in word length.
-7. Reject any finite computation as arbitrary-N proof.
-8. Check independence claims between agents/models.
-9. Re-derive strongest lemmas from definitions.
-10. Produce a dependency graph: ACCEPT / REJECT / HOLD.
+Firewall: flag as DUPLICATE/EQUIVALENT-HARDNESS anything that merely reconstructs Dx_i=C_i, D|C_i, simple CRT, or 2^{a_i}C_{i+1}-3C_i=D.
 
-OUTPUT FORMAT:
-CLAIM AUDITED
-PREMISES
-DERIVATION CHECK
-HIDDEN ASSUMPTIONS
-COUNTERCASE
-STATUS: PROVED / REFUTED / HOLD
-IMPACT ON CYCLE PROGRAM
+Red-team quantifiers, cyclic indices, u_j vs u_{j+1}, signs, primitive/imprimitive words, u=1,r=1,h=5,11,17, exceptional valuations.
 
-No role may declare CYCLES CLOSED unless it supplies a complete arbitrary-N contradiction with every dependency audited.
+ARITHMETIC COMPRESSION AUDIT: every cost-saving transformation must have exact algebraic equivalence or rigorous error bounds. Recompute small cases independently and report COST BEFORE / COST AFTER / EQUIVALENCE PASS-FAIL / HIDDEN COST.
+
+Output per claim: STATEMENT / DERIVATION / QUANTIFIERS / EDGE CASES / CIRCULARITY CHECK / PASS-FAIL / CORRECTED FORM / STATUS. CLAIM<=EVIDENCE; COMPUTATION!=PROOF; CONSENSUS!=TRUTH.
