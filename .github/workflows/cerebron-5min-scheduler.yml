@@ -1,0 +1,24 @@
+name: CEREBRON Farm 06 5min Scheduler
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: cerebron-farm06-scheduler
+  cancel-in-progress: true
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch formal audit farm
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run formal-audit-farm.yml --repo "${{ github.repository }}" --ref main
