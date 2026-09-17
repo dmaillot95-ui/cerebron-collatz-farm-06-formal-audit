@@ -1,0 +1,121 @@
+name: CEREBRON Collatz Farm 06 Formal Audit C256
+
+on:
+  push:
+    paths:
+      - '.github/workflows/formal-audit-farm.yml'
+      - 'mission/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: plan
+        shell: bash
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          R=[
+          ('FORMAL_LOGIC_AUDITOR','gemma9b','gemma-2','logical implication chain and circularity'),
+          ('QUANTIFIER_AUDITOR','gemma9b','gemma-2','forall/exists/fixed-n/arbitrary-n distinctions'),
+          ('DEPENDENCY_GRAPH_AUDITOR','llama3b','llama-3.2','map lemma dependencies and hidden imports'),
+          ('MODULAR_AUDITOR','gemma9b','gemma-2','check moduli, inverses, divisibility, rotations'),
+          ('TWO_ADIC_AUDITOR','llama3b','llama-3.2','audit exact valuation cylinder claims'),
+          ('THREE_ADIC_AUDITOR','gemma9b','gemma-2','audit endpoint and backward 3-adic constraints'),
+          ('ARCHIMEDEAN_AUDITOR','gemma9b','gemma-2','audit interval geometry and affine corrections'),
+          ('ASYMPTOTIC_AUDITOR','gemma9b','gemma-2','uniformity of O(1), limits and c_W claims'),
+          ('DYNAMICS_AUDITOR','llama3b','llama-3.2','audit first-return/excursion logic'),
+          ('STURMIAN_AUDITOR','gemma9b','gemma-2','audit mechanical/Sturmian translations'),
+          ('DIOPHANTINE_AUDITOR','llama3b','llama-3.2','audit near-resonance and irrational approximation steps'),
+          ('LOCAL_GLOBAL_AUDITOR','gemma9b','gemma-2','detect local realizability -> global cycle fallacies'),
+          ('FINITE_PROOF_AUDITOR','llama3b','llama-3.2','reject finite checks masquerading as proof'),
+          ('INDEPENDENCE_AUDITOR','llama3b','llama-3.2','audit model/agent independence claims'),
+          ('REPLICATOR_A','llama3b','llama-3.2','rederive strongest accepted lemma from definitions'),
+          ('REPLICATOR_B','gemma9b','gemma-2','independent rederivation'),
+          ('COUNTER_AUDITOR_A','llama3b','llama-3.2','attack primary audit for false rejection'),
+          ('COUNTER_AUDITOR_B','gemma9b','gemma-2','attack primary audit for false acceptance'),
+          ('SYNTHESIS_AUDITOR','gemma9b','gemma-2','retain only claims surviving all audits'),
+          ('JUDGE','gemma9b','gemma-2','final ACCEPT/REJECT/HOLD; CYCLES OPEN unless complete proof')]
+          print('matrix='+json.dumps({'include':[{'role':r,'model_id':m,'family':f,'focus':x} for r,m,f,x in R]},separators=(',',':')))
+          PY
+
+  audit-agent:
+    needs: plan
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install --quiet hf-gradio
+      - name: Execute audit agent
+        env:
+          ROLE: ${{ matrix.role }}
+          MODEL_ID: ${{ matrix.model_id }}
+          FAMILY: ${{ matrix.family }}
+          FOCUS: ${{ matrix.focus }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          python - <<'PY'
+          import json,os,importlib.util,hashlib
+          from pathlib import Path
+          spec=importlib.util.spec_from_file_location('fw','worker/farm_worker.py'); fw=importlib.util.module_from_spec(spec); spec.loader.exec_module(fw)
+          reg={'llama3b':'huggingface-projects/llama-3.2-3B-Instruct','gemma9b':'huggingface-projects/gemma-2-9b-it'}
+          role=os.environ['ROLE']; mid=os.environ['MODEL_ID']; fam=os.environ['FAMILY']; focus=os.environ['FOCUS']
+          mission=Path('mission/C256-FORMAL-AUDIT-FARM.md').read_text()
+          prompt=f'''CEREBRON OMEGA — COLLATZ FARM 06 FORMAL AUDIT\nROLE: {role}\nFOCUS: {focus}\n\n{mission}\n\nRULES: REALITY>COHERENCE; EVIDENCE>CONFIDENCE; CLAIM<=EVIDENCE; verify before accept; finite test != proof; local != global; consensus != truth. Return explicit ACCEPT/REJECT/HOLD per claim and show the first unsupported inference.'''
+          ok,text,meta=fw.invoke(reg[mid],prompt)
+          result={'schema':'cerebron-formal-audit-c256-v1','role':role,'model_id':mid,'model_family':fam,'ok':bool(ok),'response':text if ok else None,'response_sha256':hashlib.sha256(text.encode()).hexdigest() if ok and text else None,'meta':meta,'evidence_status':'UNREVIEWED_EXTERNAL_AUDIT_OUTPUT' if ok else 'NO_EXTERNAL_OUTPUT'}
+          Path('out/result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: formal-audit-c256-${{ matrix.role }}
+          path: out/result.json
+          retention-days: 14
+
+  omega-fusion:
+    needs: audit-agent
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: formal-audit-c256-*
+          path: results
+          merge-multiple: false
+      - shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          rows=[]
+          for p in Path('results').rglob('result.json'):
+            try: rows.append(json.loads(p.read_text()))
+            except: pass
+          ok=[r for r in rows if r.get('ok')]
+          acc={'schema':'cerebron-formal-audit-c256-omega-v1','artifact_rows':len(rows),'successful_external_ai_calls':len(ok),'successful_model_families':sorted({r.get('model_family') for r in ok}),'successful_roles':sorted({r.get('role') for r in ok}),'claim_note':'Audit outputs themselves remain subject to Master Hub verification.'}
+          Path('formal-audit-c256-accounting.json').write_text(json.dumps(acc,ensure_ascii=False,indent=2)+'\n')
+          Path('formal-audit-c256-packet.txt').write_text('\n\n'.join('ROLE '+str(r.get('role'))+' | '+str(r.get('model_family'))+'\n'+str(r.get('response') or '') for r in ok))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: formal-audit-c256-omega-packet
+          path: |
+            formal-audit-c256-accounting.json
+            formal-audit-c256-packet.txt
+          retention-days: 14
