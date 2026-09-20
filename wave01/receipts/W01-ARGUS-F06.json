@@ -1,0 +1,11 @@
+{
+  "schema": "wave01-real-farm-execution-v1",
+  "status": "PASS",
+  "execution_kind": "GITHUB_FARM_CODE_EXECUTION",
+  "farm": "F06",
+  "colony": "C12-ARGUS",
+  "task_id": "W01-ARGUS-F06",
+  "output_sha256": "193fb245b9e72b91d9d2a0c2ae3f1db483689e61ef4b6e70729a5b23951269bc",
+  "executed_at": "2026-09-20T19:56:42.965135+00:00",
+  "claim_limit": "Workflow execution evidence only; not autonomous model reasoning or proof."
+}
